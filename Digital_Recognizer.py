@@ -88,28 +88,28 @@ datagen = ImageDataGenerator(zoom_range = 0.1,
 conv_model.compile(loss='categorical_crossentropy', optimizer=Adam(lr=1e-4), metrics=['accuracy']) #RMSprop()
 
 
-# hist = conv_model.fit_generator(datagen.flow(X_train, y_train, batch_size=batch_size),
-#                            steps_per_epoch=len(X_train)//batch_size,
-#                            epochs=epochs,
-#                            verbose=2,  #1 for ETA, 0 for silent
-#                            validation_data=(X_cv,y_cv))
-#
-# # hist = conv_model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, verbose=1, shuffle=False,
-# #           validation_data=(X_cv, y_cv))
-#
-# # evaluate the conv_model
-# scores = conv_model.evaluate(X_train, y_train)
-# print("\n%s: %.2f%%" % (conv_model.metrics_names[1], scores[1] * 100))
-#
-# # evaluate the conv_model
-# scores = conv_model.evaluate(X_cv, y_cv)
-# print("\n%s: %.2f%%" % (conv_model.metrics_names[1], scores[1] * 100))
-#
-# # check the wrong images
-# p_cv = np.round(conv_model.predict(X_cv)).argmax(axis=1)
-# wrong_pixels = X_cv[p_cv != y_cv.argmax(axis=1)]
-# wrong_y = conv_model.predict(wrong_pixels)
-# print('[CV]: number of wrong items is:', len(wrong_pixels), 'out of', len(X_cv))
+hist = conv_model.fit_generator(datagen.flow(X_train, y_train, batch_size=batch_size),
+                           steps_per_epoch=len(X_train)//batch_size,
+                           epochs=epochs,
+                           verbose=2,  #1 for ETA, 0 for silent
+                           validation_data=(X_cv,y_cv))
+
+# hist = conv_model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, verbose=1, shuffle=False,
+#           validation_data=(X_cv, y_cv))
+
+# evaluate the conv_model
+scores = conv_model.evaluate(X_train, y_train)
+print("\n%s: %.2f%%" % (conv_model.metrics_names[1], scores[1] * 100))
+
+# evaluate the conv_model
+scores = conv_model.evaluate(X_cv, y_cv)
+print("\n%s: %.2f%%" % (conv_model.metrics_names[1], scores[1] * 100))
+
+# check the wrong images
+p_cv = np.round(conv_model.predict(X_cv)).argmax(axis=1)
+wrong_pixels = X_cv[p_cv != y_cv.argmax(axis=1)]
+wrong_y = conv_model.predict(wrong_pixels)
+print('[CV]: number of wrong items is:', len(wrong_pixels), 'out of', len(X_cv))
 
 # evaluate test data
 test_input = pd.read_csv(directory + 'test.csv')
@@ -119,27 +119,21 @@ test_input = test_input / 255.
 
 test_input = test_input.reshape(-1, 28, 28, 1)
 
-# p_test = np.round(conv_model.predict(test_input)).argmax(axis=1)
-# # write to a file
-# out_df = pd.DataFrame(
-#     {'ImageId': np.arange(1, test_input.shape[0] + 1), 'Label': p_test}).to_csv(
-#     'out.csv', header=True, index=False)
-#
-# #visually check 100 wrong cases
-# f, axarr = plt.subplots(10, 20)
-# for i in range(0, 10):
-#     for j in range(0, 10):
-#         idx = np.random.randint(0, wrong_pixels.shape[0])
-#         axarr[i][j].imshow(wrong_pixels[idx, :].reshape(28, 28), cmap=cm.Greys_r)
-#         tit = str(wrong_y[idx, :].argmax())
-#         axarr[i][j + 10].text(0.5, 0.5, tit)
-#         axarr[i][j].axis('off')
-#         axarr[i][j + 10].axis('off')
+p_test = np.round(conv_model.predict(test_input)).argmax(axis=1)
+# write to a file
+out_df = pd.DataFrame(
+    {'ImageId': np.arange(1, test_input.shape[0] + 1), 'Label': p_test}).to_csv(
+    'out.csv', header=True, index=False)
 
-f, axarr = plt.subplots(10, 10)
+#visually check 100 wrong cases
+f, axarr = plt.subplots(10, 20)
 for i in range(0, 10):
     for j in range(0, 10):
-        axarr[i][j].imshow(test_input[i*10+j, :].reshape(28, 28), cmap=cm.Greys_r)
+        idx = np.random.randint(0, wrong_pixels.shape[0])
+        axarr[i][j].imshow(wrong_pixels[idx, :].reshape(28, 28), cmap=cm.Greys_r)
+        tit = str(wrong_y[idx, :].argmax())
+        axarr[i][j + 10].text(0.5, 0.5, tit)
         axarr[i][j].axis('off')
+        axarr[i][j + 10].axis('off')
 
 plt.show()
